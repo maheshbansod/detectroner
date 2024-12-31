@@ -1,4 +1,6 @@
 from typing import Any
+import logging
+import os
 
 from detectron2 import model_zoo
 from detectron2.utils.logger import setup_logger
@@ -7,6 +9,13 @@ from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog
 import cv2
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 setup_logger()
 
 def _detectron2_predictor():
@@ -32,8 +41,6 @@ def detect_objects(video_path: str, output_dir: str = "output") -> list[dict[str
     Returns:
         List[Dict[str, Any]]: A list of detected objects.
     """
-    import os
-    import logging
     
     logging.info(f"Starting object detection on video: {video_path}")
     os.makedirs(output_dir, exist_ok=True)
@@ -75,12 +82,9 @@ def detect_objects(video_path: str, output_dir: str = "output") -> list[dict[str
                 # Get keypoint names if available
                 if instances.has("pred_keypoints"):
                     obj_name = "person-keypoints"
-                else:
-                    obj_name = "unknown"
-                
-                output_path = os.path.join(output_dir, f"out-{frame_count}-{obj_name}-{idx+1}.jpg")
-                cv2.imwrite(output_path, annotated_frame)
-                logging.debug(f"Saved annotated frame to: {output_path}")
+                    output_path = os.path.join(output_dir, f"out-{frame_count}-{obj_name}-{idx+1}.jpg")
+                    cv2.imwrite(output_path, annotated_frame)
+                    logging.debug(f"Saved annotated frame to: {output_path}")
     
     video_reader.release()
     logging.info(f"Completed processing. Processed {processed_frames} frames with detections out of {frame_count} total frames")
